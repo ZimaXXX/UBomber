@@ -6,6 +6,17 @@
 #include "GameFramework/Actor.h"
 #include "UBomberBombBase.generated.h"
 
+UENUM()
+namespace EBombDamageDirection
+{
+	enum Type
+	{
+		Left,
+		Right,
+		Top,
+		Bottom
+	};
+}
 UCLASS()
 class UBOMBER_API AUBomberBombBase : public AActor
 {
@@ -21,19 +32,11 @@ public:
 
 	void Initialize(float BombTime, int32 BombRange, bool bIsBombRemotelyControlled);
 
-	UFUNCTION()
-	void OnOwnerOverlapEnd(class UPrimitiveComponent* OverlappedComponent, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	UPROPERTY(VisibleDefaultsOnly, Category = Default)
-	class UCapsuleComponent* CapsuleRoot;
-
 	UPROPERTY(VisibleDefaultsOnly, Category = Default)
 	class UStaticMeshComponent* SphereComponent;
+
+	UFUNCTION()
+	void OnOwnerOverlapEnd(class UPrimitiveComponent* OverlappedComponent, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bomb)
 		float BombTime;
@@ -42,8 +45,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bomb)
 		uint8 bIsBombRemotelyControlled : 1;
 
+	UFUNCTION(BlueprintImplementableEvent, Category = Bomb)
+		void OnBombExploded();
 
+	TArray<AActor*> GetActorsToDamage(bool bDrawDebugLines);
+	TArray<AActor*> GetActorsToDamageFromSide(EBombDamageDirection::Type DamageDirection, float TraceLength, bool bDisplayDebugLine);
+protected:
+
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
+	virtual float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser) override;
 private:
+
 	uint8 bTimerExpired : 1;
 	void ToggleTimer();
 	void BombTimerExpired();
