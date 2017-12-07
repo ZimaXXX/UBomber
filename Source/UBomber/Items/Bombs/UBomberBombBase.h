@@ -45,6 +45,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bomb)
 		uint8 bIsBombRemotelyControlled : 1;
 
+	void Detonate();
+
 	UFUNCTION(BlueprintImplementableEvent, Category = Bomb)
 		void OnBombExploded();
 

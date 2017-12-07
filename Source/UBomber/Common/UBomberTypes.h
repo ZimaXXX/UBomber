@@ -26,3 +26,40 @@ public:
 		UMaterial* MeshMaterial;
 
 };
+
+UENUM(BlueprintType)
+namespace EPickupType
+{
+	enum Type
+	{
+		NONE,
+		LONGER_BOMB_BLASTS,
+		MORE_BOMBS,
+		FASTER_RUN_SPEED,
+		REMOTE_CONTROLLED_BOMBS
+	};
+}
+
+namespace EPickupType
+{
+	inline const TCHAR* ToString(EPickupType::Type Type)
+	{
+		switch (Type)
+		{
+		case LONGER_BOMB_BLASTS:
+			return TEXT("Longer Blasts");
+
+		case MORE_BOMBS:
+			return TEXT("More Bombs");
+
+		case FASTER_RUN_SPEED:
+			return TEXT("Faster Run");
+
+		case REMOTE_CONTROLLED_BOMBS:
+			return TEXT("Remote Bombs");
+
+		default:
+			return TEXT("INVALID");
+		}
+	}
+}
