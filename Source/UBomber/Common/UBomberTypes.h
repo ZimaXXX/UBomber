@@ -26,3 +26,15 @@ public:
 		UMaterial* MeshMaterial;
 
 };
+
+UENUM()
+namespace EPickupType
+{
+	enum Type
+	{
+		LONGER_BOMB_BLASTS,
+		MORE_BOMBS,
+		FASTER_RUN_SPEED,
+		REMOTE_CONTROLLED_BOMBS
+	};
+}

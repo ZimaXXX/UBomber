@@ -4,8 +4,12 @@
 #include "Runtime/Engine/Classes/Components/StaticMeshComponent.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "Core/UBomberPlayerState.h"
+#include "Engine/World.h"
 #include "Player/UBomberCharMovementComponent.h"
 
+
+static const int32 REMOTE_BOMB_LIMIT = 1;
+static const float REMOTE_BOMB_PICKUP_TIME = 10.0f;
 // Sets default values
 AUBomberCharacter::AUBomberCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer.SetDefaultSubobjectClass<UUBomberCharMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
@@ -14,7 +18,7 @@ AUBomberCharacter::AUBomberCharacter(const FObjectInitializer& ObjectInitializer
 	BombLimit = 1;
 	BombTime = 3.0f;
 	BombCounter = 0;
-	bIsBombRemotelyControlled = false;
+	bRemoteDetonatingOn = false;
 
 	SphereComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	SphereComponent->SetupAttachment(GetRootComponent());
@@ -33,6 +37,66 @@ void AUBomberCharacter::OnBombExploded()
 {
 	UE_LOG(LogTemp, Warning, TEXT("My bomb exploded!"));
 	BombCounter--;
+}
+
+void AUBomberCharacter::ToggleTimer()
+{
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		// If the timer has expired or does not exist, start it  
+		if ((BombTimerHandle.IsValid() == false) || (bTimerExpired))
+		{
+			World->GetTimerManager().SetTimer(BombTimerHandle, this, &AUBomberCharacter::BombTimerExpired, BombTime);
+			bTimerExpired = false;
+		}
+		else
+		{
+			if (World->GetTimerManager().IsTimerPaused(BombTimerHandle) == true)
+			{
+				World->GetTimerManager().UnPauseTimer(BombTimerHandle);
+			}
+			else
+			{
+				World->GetTimerManager().PauseTimer(BombTimerHandle);
+			}
+		}
+
+	}
+}
+
+void AUBomberCharacter::BombTimerExpired()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Remote bomb timer finished!"));
+	if (bRemoteDetonatingOn && IsValid(RemoteBombReference)) {
+		RemoteBombReference->Detonate();
+	}
+	bRemoteDetonatingOn = false;
+}
+
+void AUBomberCharacter::PickupFound(EPickupType::Type PickupType)
+{
+	//LONGER_BOMB_BLASTS,
+	//	MORE_BOMBS,
+	//	FASTER_RUN_SPEED,
+	//	REMOTE_CONTROLLED_BOMBS
+	switch (PickupType) {
+	case(EPickupType::LONGER_BOMB_BLASTS):
+		BombRange++;
+		break;
+	case(EPickupType::MORE_BOMBS):
+		BombLimit++;
+		break;
+	case(EPickupType::FASTER_RUN_SPEED):
+		SpeedModifier += 0.5f;
+		break;
+	case(EPickupType::REMOTE_CONTROLLED_BOMBS):
+		bRemoteDetonatingOn = true;
+		GetWorld()->GetTimerManager().SetTimer(BombTimerHandle, this, &AUBomberCharacter::BombTimerExpired, REMOTE_BOMB_PICKUP_TIME);
+		bTimerExpired = false;
+		UE_LOG(LogTemp, Warning, TEXT("Remote bomb timer started!"));
+		break;
+	}
 }
 
 // Called when the game starts or when spawned
@@ -55,13 +119,21 @@ float AUBomberCharacter::GetSpeedModifier() const
 }
 
 void AUBomberCharacter::PlaceBomb() {
-	if (BombCounter >= BombLimit) {
+	//If we are controlling remote bomb detonate it
+	if (bRemoteDetonatingOn && IsValid(RemoteBombReference)) {
+		UE_LOG(LogTemp, Warning, TEXT("Detonating remote bomb!"));
+		RemoteBombReference->Detonate();
+		RemoteBombReference = NULL;
+		return;
+	}
+	//Check if there is sufficient limit to place new bomb
+	if (BombCounter >= BombLimit || (bRemoteDetonatingOn && BombCounter >= REMOTE_BOMB_LIMIT)) {
 		UE_LOG(LogTemp, Warning, TEXT("Bomb limit reached!"));
 		return;
 	}
 
+	//Initialize variables
 	FVector Location = this->GetActorLocation();
-	//Location.Z = 0;
 	FRotator Rotation = this->GetActorRotation();
 	FTransform SpawnTransform(Rotation, Location);
 	FActorSpawnParameters SpawnInfo;
@@ -72,17 +144,21 @@ void AUBomberCharacter::PlaceBomb() {
 	else {
 		NewBombClass = AUBomberBombBase::StaticClass();
 	}
+	//Initialize AUBomberBombBase
 	auto DeferredBomb = Cast<AUBomberBombBase>(UGameplayStatics::BeginDeferredActorSpawnFromClass(this, NewBombClass, SpawnTransform));
 	if (DeferredBomb != nullptr)
 	{
-		DeferredBomb->Initialize(BombTime, BombRange, bIsBombRemotelyControlled);
-
+		DeferredBomb->Initialize(BombTime, BombRange, bRemoteDetonatingOn);
+		//Place bomb
 		AActor* SpawnedActor = UGameplayStatics::FinishSpawningActor(DeferredBomb, SpawnTransform);
 		AUBomberBombBase* BombActor = Cast<AUBomberBombBase>(SpawnedActor);
 		if (BombActor) {
 			BombActor->SetOwner(this);
 			UE_LOG(LogTemp, Warning, TEXT("Placing bomb!"));
 			BombCounter++;
+			if (bRemoteDetonatingOn) {
+				RemoteBombReference = BombActor;
+			}
 		}
 	}
 }

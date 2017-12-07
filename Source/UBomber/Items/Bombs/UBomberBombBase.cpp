@@ -28,7 +28,6 @@ AUBomberBombBase::AUBomberBombBase(const FObjectInitializer& ObjectInitializer) 
 	SphereComponent->OnComponentEndOverlap.AddDynamic(this, &AUBomberBombBase::OnOwnerOverlapEnd);
 	RootComponent = SphereComponent;
 
-
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true; 
 }
@@ -51,8 +50,9 @@ void AUBomberBombBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ToggleTimer();
-	
+	if (!bIsBombRemotelyControlled) {
+		ToggleTimer();
+	}	
 }
 
 // Called every frame
@@ -69,9 +69,34 @@ float AUBomberBombBase::TakeDamage(float Damage, struct FDamageEvent const& Dama
 	if (!bTimerExpired && IsValid(this)) {
 		UE_LOG(LogTemp, Warning, TEXT("Damage inflicted to bomb by %s"), *DamageCauser->GetName());
 		GetWorld()->GetTimerManager().PauseTimer(BombTimerHandle);
-		BombTimerExpired();
+		bTimerExpired = true;
+		Detonate();
 	}
-	return 0;
+	return Damage;
+}
+
+void AUBomberBombBase::Detonate()
+{
+	//Send information to BombOwner to update BombCounter
+	AActor* const BombOwner = GetOwner();
+	if (IsValid(BombOwner) && BombOwner->IsA<AUBomberCharacter>()) {
+		AUBomberCharacter* UB_C = Cast<AUBomberCharacter>(BombOwner);
+		UB_C->OnBombExploded();
+	}
+	//Get Actors to Damage (without those behind walls) and Inflict Damage
+	TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
+	FDamageEvent DamageEvent(ValidDamageTypeClass);
+	const float DamageAmount = 1.f;
+	TArray<AActor*> ActorsToDamage = GetActorsToDamage(true);
+	for (AActor* Actor : ActorsToDamage) {
+		if (IsValid(Actor)) {
+			Actor->TakeDamage(DamageAmount, DamageEvent, NULL, this);
+		}
+	}
+	//Call BP Event
+	OnBombExploded();
+	//Remove Bomb from game
+	this->Destroy();
 }
 
 TArray<AActor*> AUBomberBombBase::GetActorsToDamage(bool bDrawDebugLines)
@@ -186,25 +211,6 @@ void AUBomberBombBase::BombTimerExpired()
 {
 	bTimerExpired = true;
 	
-	//Send information to BombOwner to update BombCounter
-	AActor* const BombOwner = GetOwner();
-	if (IsValid(BombOwner) && BombOwner->IsA<AUBomberCharacter>()) {
-		AUBomberCharacter* UB_C = Cast<AUBomberCharacter>(BombOwner);
-		UB_C->OnBombExploded();
-	}
-	//Get Actors to Damage (without those behind walls) and Inflict Damage
-	TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
-	FDamageEvent DamageEvent(ValidDamageTypeClass);
-	const float DamageAmount = 1.f;
-	TArray<AActor*> ActorsToDamage = GetActorsToDamage(true);
-	for (AActor* Actor : ActorsToDamage) {
-		if (IsValid(Actor)) {
-			Actor->TakeDamage(DamageAmount, DamageEvent, NULL, this);
-		}
-	}
-	//Call BP Event
-	OnBombExploded();
-	//Remove Bomb from game
-	this->Destroy();
+	Detonate();
 }
 

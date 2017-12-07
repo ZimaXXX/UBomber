@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Items/Bombs/UBomberBombBase.h"
+#include "Common/UBomberTypes.h"
 #include "UBomberCharacter.generated.h" 
 
 UCLASS()
@@ -35,11 +36,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bomb)
 		int32 BombRange;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bomb)
-		uint8 bIsBombRemotelyControlled : 1;
+		uint8 bRemoteDetonatingOn : 1;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bomb)
 		int32 BombLimit;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Default)
 		TSubclassOf<AUBomberBombBase> BombClass;
+
+	UFUNCTION(BlueprintCallable, Category = Pickup)
+	void PickupFound(EPickupType::Type PickupType);
 
 protected:
 	virtual void BeginPlay() override;
@@ -49,4 +53,11 @@ protected:
 private:
 	int32 BombCounter;
 	float SpeedModifier;
+
+	uint8 bTimerExpired : 1;
+	void ToggleTimer();
+	void BombTimerExpired();
+	FTimerHandle BombTimerHandle;
+
+	AUBomberBombBase* RemoteBombReference;
 };
