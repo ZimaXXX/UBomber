@@ -63,3 +63,25 @@ namespace EPickupType
 		}
 	}
 }
+
+USTRUCT(BlueprintType)
+struct FMapDataStruct
+{
+	GENERATED_USTRUCT_BODY()
+
+public:
+
+	FMapDataStruct()
+		: Height(0), Width(0)
+	{}
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Default)
+		uint8 Height;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Default)
+		uint8 Width;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Default)
+		TArray<uint8> MapTiles;
+
+};
