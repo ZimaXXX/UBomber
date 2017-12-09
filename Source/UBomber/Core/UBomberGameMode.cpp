@@ -8,12 +8,15 @@
 
 AUBomberGameMode::AUBomberGameMode(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) 
 {
-	
+
+	MapGeneratorComponent = ObjectInitializer.CreateDefaultSubobject<UMapGeneratorComponent>(this, TEXT("MapGenerator"));
+	MapGeneratorComponent->AttachTo(GetRootComponent());
 }
 
 void AUBomberGameMode::BeginPlay()
 {
 	Super::BeginPlay();
+	//FMapDataStruct MapData = MapGenerator->GenerateMapData(7);
 	UGameplayStatics::CreatePlayer(GetWorld(), 1, true);
 }
 
@@ -37,4 +40,6 @@ UClass* AUBomberGameMode::GetDefaultPawnClassForController_Implementation(AContr
 	
 	return PawnClass;
 }
+
+
 

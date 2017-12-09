@@ -6,6 +6,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "Runtime/Engine/Classes/Engine/DataTable.h"
 #include "Common/UBomberTypes.h"
+#include "Maps/Components/MapGeneratorComponent.h"
 #include "UBomberGameMode.generated.h"
 
 /**
@@ -18,9 +19,14 @@ class UBOMBER_API AUBomberGameMode : public AGameModeBase
 	
 public:
 	AUBomberGameMode(const FObjectInitializer& ObjectInitializer);
+	
+	UPROPERTY(VisibleAnywhere, Category = Map)
+	UMapGeneratorComponent* MapGeneratorComponent;
 
+protected:
 	//Overrides
 	virtual void BeginPlay() override;
-	UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
+	virtual UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
+
 
 };
