@@ -37,33 +37,13 @@ namespace EPickupType
 		LONGER_BOMB_BLASTS = 1,
 		MORE_BOMBS = 2,
 		FASTER_RUN_SPEED = 3,
-		REMOTE_CONTROLLED_BOMBS = 4
+		REMOTE_CONTROLLED_BOMBS = 4,
 	};
 
 }
 namespace EPickupType
 {
 	static const int32 NUMBER_OF_PICKUP_TYPES = 5;
-	inline const TCHAR* ToString(EPickupType::Type Type)
-	{
-		switch (Type)
-		{
-		case LONGER_BOMB_BLASTS:
-			return TEXT("Longer Blasts");
-
-		case MORE_BOMBS:
-			return TEXT("More Bombs");
-
-		case FASTER_RUN_SPEED:
-			return TEXT("Faster Run");
-
-		case REMOTE_CONTROLLED_BOMBS:
-			return TEXT("Remote Bombs");
-
-		default:
-			return TEXT("INVALID");
-		}
-	}
 }
 
 USTRUCT(BlueprintType)
@@ -74,14 +54,10 @@ struct FMapDataStruct
 public:
 
 	FMapDataStruct()
-		: Height(0), Width(0)
+		: Size(0)
 	{}
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Default)
-		uint8 Height;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Default)
-		uint8 Width;
+	uint8 Size;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Default)
 		TArray<uint8> MapTiles;

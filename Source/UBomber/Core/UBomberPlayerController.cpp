@@ -31,6 +31,7 @@ void AUBomberPlayerController::SetupInputComponent() {
 			InputComponent->BindAxis("MoveRight_Player2", this, &AUBomberPlayerController::MoveRight);
 			InputComponent->BindAction("PlaceBomb_Player2", IE_Pressed, this, &AUBomberPlayerController::PlaceBomb);
 		}
+		InputComponent->BindAction("RestartGame", IE_Pressed, this, &AUBomberPlayerController::RestartGame);
 	}	
 }
 
@@ -60,4 +61,11 @@ void AUBomberPlayerController::PlaceBomb()
 		UB_C->PlaceBomb();		
 	}
 	
+}
+
+void AUBomberPlayerController::RestartGame()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Trying to restart level"));
+	RestartLevel();
+
 }

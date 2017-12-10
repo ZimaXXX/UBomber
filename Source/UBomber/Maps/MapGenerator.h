@@ -14,13 +14,14 @@ UENUM(BlueprintType)
 namespace EMapTileMode
 {
 	enum Type
-	{		
+	{
 		EMPTY = 0,
 		PLAYER_START = 1,
 		WALL = 2,
 		DESTRUCTABLE_WALL = 3,
 		PICKUP = 4,
-		DESTRUCTABLE_WALL_AND_PICKUP = 5
+		DESTRUCTABLE_WALL_AND_PICKUP = 5,
+		RESERVED = 6
 
 	};
 }
@@ -36,5 +37,5 @@ public:
 	
 	/**
 	*/
-	FMapDataStruct GenerateMap(int32 Size);
+	FMapDataStruct GenerateMapData(int32 Size);
 };

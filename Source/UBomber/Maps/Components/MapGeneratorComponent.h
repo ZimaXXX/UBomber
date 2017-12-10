@@ -3,32 +3,27 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameModeBase.h"
-#include "Runtime/Engine/Classes/Engine/DataTable.h"
-#include "Common/UBomberTypes.h"
+#include "Components/SceneComponent.h"
 #include "Maps/MapGenerator.h"
 #include "Items/Pickups/UBomberPickupBase.h"
 #include "Items/Walls/UBomberWallBase.h"
 #include "Items/Walls/UBomberSolidWall.h"
 #include "Items/Walls/UBomberDestructableWall.h"
 #include "Items/Floor/UBomberFloorBase.h"
-#include "UBomberGameMode.generated.h"
+#include "MapGeneratorComponent.generated.h"
 
-/**
- * 
- */
-UCLASS()
-class UBOMBER_API AUBomberGameMode : public AGameModeBase
+
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+class UBOMBER_API UMapGeneratorComponent : public USceneComponent
 {
 	GENERATED_BODY()
-	
-public:
-	AUBomberGameMode(const FObjectInitializer& ObjectInitializer);
-	
-	//UPROPERTY(VisibleAnywhere, Category = Map)
-	//UMapGeneratorComponent* MapGeneratorComponent;
 
-	uint8 bIsProceduralMapSpawned : 1;
+public:	
+
+	DECLARE_DELEGATE(FMapReadyDelegate);
+	FMapReadyDelegate OnMapReadyDelegate;
+	// Sets default values for this component's properties
+	UMapGeneratorComponent();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Map)
 		uint8 MapDimensionSize;
@@ -45,17 +40,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Map|Spawn")
 		TSubclassOf<AUBomberDestructableWall> DestructableWallClass;
 
-	UFUNCTION()
-		void OnBombExploded(AUBomberBombBase* BombReference);
 
 protected:
-	//Overrides
 	virtual void BeginPlay() override;
-	virtual UClass* GetDefaultPawnClassForController_Implementation(AController* InController) override;
-	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
-	virtual AActor* ChoosePlayerStart_Implementation(AController* Player) override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+		
 private:
+	UMapGenerator* MapGenerator;
 	void SpawnProceduralMap(FMapDataStruct MapData);
-	void CheckIfGameEnds();
 };

@@ -3,6 +3,7 @@
 #include "UBomberCharacter.h"
 #include "Runtime/Engine/Classes/Components/StaticMeshComponent.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
+#include "Core/UBomberGameMode.h"
 #include "Items/Pickups/UBomberPickupBase.h"
 #include "Core/UBomberPlayerState.h"
 #include "Engine/World.h"
@@ -35,36 +36,13 @@ void AUBomberCharacter::PlayerStateReady_Implementation()
 	}
 }
 
-void AUBomberCharacter::OnBombExploded()
+void AUBomberCharacter::OnBombExploded(AUBomberBombBase* BombReference)
 {
+	if (IsValid(BombReference) && IsValid(RemoteBombReference) && RemoteBombReference == BombReference) {
+		RemoteBombReference = NULL;
+	}
 	UE_LOG(LogTemp, Warning, TEXT("My bomb exploded!"));
 	BombCounter--;
-}
-
-void AUBomberCharacter::ToggleTimer()
-{
-	UWorld* World = GetWorld();
-	if (World)
-	{
-		// If the timer has expired or does not exist, start it  
-		if ((BombTimerHandle.IsValid() == false) || (bTimerExpired))
-		{
-			World->GetTimerManager().SetTimer(BombTimerHandle, this, &AUBomberCharacter::BombTimerExpired, BombTime);
-			bTimerExpired = false;
-		}
-		else
-		{
-			if (World->GetTimerManager().IsTimerPaused(BombTimerHandle) == true)
-			{
-				World->GetTimerManager().UnPauseTimer(BombTimerHandle);
-			}
-			else
-			{
-				World->GetTimerManager().PauseTimer(BombTimerHandle);
-			}
-		}
-
-	}
 }
 
 void AUBomberCharacter::BombTimerExpired()
@@ -163,7 +141,12 @@ void AUBomberCharacter::PlaceBomb() {
 		//Place bomb
 		AActor* SpawnedActor = UGameplayStatics::FinishSpawningActor(DeferredBomb, SpawnTransform);
 		AUBomberBombBase* BombActor = Cast<AUBomberBombBase>(SpawnedActor);
-		if (BombActor) {
+		if (IsValid(BombActor)) {
+			AUBomberGameMode* UB_GM = GetWorld()->GetAuthGameMode<AUBomberGameMode>();
+			if (UB_GM) {
+				BombActor->OnBombExplodedDelegate.BindUObject(UB_GM, &AUBomberGameMode::OnBombExploded);
+			}
+
 			BombActor->SetOwner(this);
 			UE_LOG(LogTemp, Warning, TEXT("Placing bomb!"));
 			BombCounter++;

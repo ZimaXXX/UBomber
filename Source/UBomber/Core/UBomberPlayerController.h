@@ -24,4 +24,5 @@ private:
 	void MoveForward(float axisValue);
 	void MoveRight(float axisValue);
 	void PlaceBomb();
+	void RestartGame();
 };

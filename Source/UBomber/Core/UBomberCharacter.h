@@ -29,7 +29,7 @@ public:
 	float GetSpeedModifier() const;
 
 	void PlaceBomb();
-	void OnBombExploded();
+	void OnBombExploded(AUBomberBombBase* BombReference);
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bomb)
 		float BombTime;
@@ -56,7 +56,6 @@ private:
 	float SpeedModifier;
 
 	uint8 bTimerExpired : 1;
-	void ToggleTimer();
 	void BombTimerExpired();
 	FTimerHandle BombTimerHandle;
 

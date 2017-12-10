@@ -17,8 +17,9 @@ AUBomberBombBase::AUBomberBombBase(const FObjectInitializer& ObjectInitializer) 
 {
 	bTimerExpired = false;
 	bIsBombRemotelyControlled = false;
-	BombTime = 3.0f;
+	BombTime = 10.0f;
 	BombRange = 3.0f;
+	bIsInflictingChainDamage = false;
 
 	SphereComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	SphereComponent->Mobility = EComponentMobility::Static;
@@ -50,7 +51,8 @@ void AUBomberBombBase::BeginPlay()
 	Super::BeginPlay();
 
 	if (!bIsBombRemotelyControlled) {
-		ToggleTimer();
+		GetWorld()->GetTimerManager().SetTimer(BombTimerHandle, this, &AUBomberBombBase::BombTimerExpired, BombTime);
+		bTimerExpired = false;
 	}	
 }
 
@@ -64,10 +66,14 @@ void AUBomberBombBase::Tick(float DeltaTime)
 float AUBomberBombBase::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
 {
 	if (!bTimerExpired && IsValid(this)) {
-		UE_LOG(LogTemp, Warning, TEXT("Damage inflicted to bomb by %s"), *DamageCauser->GetName());
-		GetWorld()->GetTimerManager().PauseTimer(BombTimerHandle);
+		if (IsValid(DamageCauser)) {
+			UE_LOG(LogTemp, Warning, TEXT("Damage inflicted to bomb by %s"), *DamageCauser->GetName());
+		}
+		
+		GetWorld()->GetTimerManager().ClearTimer(BombTimerHandle);
+		BombTime = 1.0f;
+		GetWorld()->GetTimerManager().SetTimer(BombTimerHandle, this, &AUBomberBombBase::BombTimerExpired, BombTime);
 		bTimerExpired = true;
-		Detonate();
 	}
 	return Damage;
 }
@@ -78,7 +84,7 @@ void AUBomberBombBase::Detonate()
 	AActor* const BombOwner = GetOwner();
 	if (IsValid(BombOwner) && BombOwner->IsA<AUBomberCharacter>()) {
 		AUBomberCharacter* UB_C = Cast<AUBomberCharacter>(BombOwner);
-		UB_C->OnBombExploded();
+		UB_C->OnBombExploded(this);
 	}
 	//Get Actors to Damage (without those behind walls) and Inflict Damage
 	TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
@@ -87,9 +93,14 @@ void AUBomberBombBase::Detonate()
 	TArray<AActor*> ActorsToDamage = GetActorsToDamage(true);
 	for (AActor* Actor : ActorsToDamage) {
 		if (IsValid(Actor)) {
+			if (Actor->IsA<AUBomberBombBase>()) {
+				//Cast<AUBomberBombBase>(Actor)->bGotDamaged = true;
+				bIsInflictingChainDamage = true;
+			}
 			Actor->TakeDamage(DamageAmount, DamageEvent, NULL, this);
 		}
 	}
+	OnBombExplodedDelegate.Execute(this);
 	//Call BP Event
 	OnBombExploded();
 	//Remove Bomb from game
@@ -109,7 +120,7 @@ TArray<AActor*> AUBomberBombBase::GetActorsToDamage(bool bDrawDebugLines)
 		FVector BoxExtent;
 		float SphereRadius;
 		UKismetSystemLibrary::GetComponentBounds(SphereComponent, Origin, BoxExtent, SphereRadius);
-		
+		//Trace length = BombRange on sides + bomb size
 		float TraceLength = SphereRadius * (2 * BombRange + 1);
 		TArray<AActor*> TempActors;
 		TempActors = GetActorsToDamageFromSide(EBombDamageDirection::Left, TraceLength, bDrawDebugLines);
@@ -143,7 +154,7 @@ TArray<AActor*> AUBomberBombBase::GetActorsToDamageFromSide(EBombDamageDirection
 	TArray<AActor*> FinalActorsArray;
 	TArray<FHitResult> ObstacleHitResults;
 	FCollisionQueryParams ObstacleCollisionQueryParams = FCollisionQueryParams(FName(TEXT("Trace")), false, this);
-	FCollisionResponseParams CollisionResponseParams = FCollisionResponseParams(ECollisionResponse::ECR_Overlap);
+	FCollisionResponseParams CollisionResponseParams = FCollisionResponseParams(ECollisionResponse::ECR_Block);
 
 	FVector TraceVector;
 	switch (DamageDirection) {
@@ -176,32 +187,6 @@ TArray<AActor*> AUBomberBombBase::GetActorsToDamageFromSide(EBombDamageDirection
 		FinalActorsArray.AddUnique(HitResult.Actor.Get());
 	}
 	return FinalActorsArray;
-}
-
-void AUBomberBombBase::ToggleTimer()
-{
-	UWorld* World = GetWorld();
-	if (World)
-	{
-		// If the timer has expired or does not exist, start it  
-		if ((BombTimerHandle.IsValid() == false) || (bTimerExpired))
-		{
-			GetWorld()->GetTimerManager().SetTimer(BombTimerHandle, this, &AUBomberBombBase::BombTimerExpired, BombTime);
-			bTimerExpired = false;
-		}
-		else
-		{
-			if (World->GetTimerManager().IsTimerPaused(BombTimerHandle) == true)
-			{
-				World->GetTimerManager().UnPauseTimer(BombTimerHandle);
-			}
-			else
-			{
-				World->GetTimerManager().PauseTimer(BombTimerHandle);
-			}
-		}
-
-	}
 }
 
 void AUBomberBombBase::BombTimerExpired()

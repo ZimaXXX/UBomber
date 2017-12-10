@@ -27,6 +27,9 @@ public:
 	DECLARE_MULTICAST_DELEGATE(FOnBombTimerFinished)
 	FOnBombTimerFinished OnBombTimerFinished;
 
+	DECLARE_DELEGATE_OneParam(FOnBombExploded, AUBomberBombBase*)
+	FOnBombExploded OnBombExplodedDelegate;
+
 	// Sets default values for this actor's properties
 	AUBomberBombBase(const FObjectInitializer& ObjectInitializer);
 
@@ -52,6 +55,8 @@ public:
 
 	TArray<AActor*> GetActorsToDamage(bool bDrawDebugLines);
 	TArray<AActor*> GetActorsToDamageFromSide(EBombDamageDirection::Type DamageDirection, float TraceLength, bool bDisplayDebugLine);
+
+	uint8 bIsInflictingChainDamage : 1;
 protected:
 
 	virtual void BeginPlay() override;
@@ -60,7 +65,6 @@ protected:
 private:
 
 	uint8 bTimerExpired : 1;
-	void ToggleTimer();
 	void BombTimerExpired();
 	FTimerHandle BombTimerHandle;
 };
