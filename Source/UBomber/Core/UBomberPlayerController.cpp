@@ -4,6 +4,7 @@
 #include "Core/UBomberGameMode.h"
 #include "Core/UBomberPlayerState.h"
 #include "Core/UBomberCharacter.h"
+#include "Core/UBomberGameInstance.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "Runtime/Engine/Classes/Engine/LocalPlayer.h"
 #include "Runtime/Engine/Classes/GameFramework/Pawn.h"
@@ -33,6 +34,34 @@ void AUBomberPlayerController::SetupInputComponent() {
 		}
 		InputComponent->BindAction("RestartGame", IE_Pressed, this, &AUBomberPlayerController::RestartGame);
 	}	
+}
+
+void AUBomberPlayerController::PreClientTravel(const FString & PendingURL, ETravelType TravelType, bool bIsSeamlessTravel)
+{
+	UGameInstance* GameInstance = GetWorld()->GetGameInstance();
+	if (PlayerState) {
+		AUBomberPlayerState* UB_PS = Cast<AUBomberPlayerState>(PlayerState);
+		if (UB_PS && GameInstance->IsA<UGameInstance>()) {
+			UUBomberGameInstance* UB_GI = Cast<UUBomberGameInstance>(GameInstance);
+			UB_GI->SetVictoriesForIndex(UGameplayStatics::GetPlayerControllerID(this), UB_PS->NumberOfVictories);
+		}
+		
+	}
+	Super::PreClientTravel(PendingURL, TravelType, bIsSeamlessTravel);
+}
+
+void AUBomberPlayerController::BeginPlayingState()
+{
+	Super::BeginPlayingState();
+	UGameInstance* GameInstance = GetWorld()->GetGameInstance();
+	if (PlayerState) {
+		AUBomberPlayerState* UB_PS = Cast<AUBomberPlayerState>(PlayerState);
+		if (UB_PS && GameInstance->IsA<UGameInstance>()) {
+			UUBomberGameInstance* UB_GI = Cast<UUBomberGameInstance>(GameInstance);
+			UB_PS->NumberOfVictories = UB_GI->GetVictoriesForIndex(UGameplayStatics::GetPlayerControllerID(this));
+		}
+	
+	}
 }
 
 void AUBomberPlayerController::MoveForward(float axisValue)

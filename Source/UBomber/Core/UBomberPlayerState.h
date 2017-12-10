@@ -17,8 +17,11 @@ class UBOMBER_API AUBomberPlayerState : public APlayerState
 
 public:
 
+	AUBomberPlayerState();
+
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = Default)
 	UMaterial* PlayerMaterial;
 	
-	
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = Default)
+	int32 NumberOfVictories;
 };

@@ -15,6 +15,7 @@ static int32 DEFAULT_MAP_DIMENSION_SIZE = 9;
 static float SINGLE_MAP_ELEMENT_SIZE = 100.0f;
 AUBomberGameMode::AUBomberGameMode(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) 
 {
+	bUseSeamlessTravel = true;
 	MapDimensionSize = DEFAULT_MAP_DIMENSION_SIZE;
 	//bIsProceduralMapSpawned = false;
 
@@ -39,7 +40,10 @@ void AUBomberGameMode::OnBombExploded(AUBomberBombBase * BombReference)
 void AUBomberGameMode::BeginPlay()
 {
 	Super::BeginPlay();
-	UGameplayStatics::CreatePlayer(GetWorld(), 1, true);
+	if (!UGameplayStatics::GetPlayerController(GetWorld(), 1)) {
+		UGameplayStatics::CreatePlayer(GetWorld(), 1, true);
+	}
+
 	//FMapDataStruct MapData = MapGenerator->GenerateMapData(7);
 	//UGameplayStatics::CreatePlayer(GetWorld(), 1, true);
 }
@@ -163,7 +167,7 @@ void AUBomberGameMode::CheckIfGameEnds()
 	TArray<AUBomberPlayerController*> AlivePlayers;
 	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
 	{
-		APlayerController* PlayerController = *Iterator;
+		APlayerController* PlayerController = Iterator->Get();
 		AUBomberPlayerController * UB_PC = Cast<AUBomberPlayerController>(PlayerController);
 		if (UB_PC)
 		{
@@ -180,6 +184,10 @@ void AUBomberGameMode::CheckIfGameEnds()
 		if (IsValid(UB_PC)) {
 			if (IsValid(UB_PC->PlayerState)) {
 				UE_LOG(LogTemp, Warning, TEXT("Player %s WON"), *UB_PC->PlayerState->PlayerName);
+				AUBomberPlayerState* UB_PS = Cast<AUBomberPlayerState>(UB_PC->PlayerState);
+				if (UB_PS) {
+					UB_PS->NumberOfVictories++;
+				}				
 			}
 			else {
 				UE_LOG(LogTemp, Warning, TEXT("Player WON"));

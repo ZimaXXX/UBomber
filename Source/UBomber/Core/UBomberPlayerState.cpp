@@ -2,6 +2,9 @@
 
 #include "UBomberPlayerState.h"
 
-
+AUBomberPlayerState::AUBomberPlayerState() : Super() 
+{
+	NumberOfVictories = 0;
+}
 
 

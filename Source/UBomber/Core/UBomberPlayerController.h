@@ -14,11 +14,13 @@ class UBOMBER_API AUBomberPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 	
-public:
+protected:
 
 	//Overrides
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
+	virtual void PreClientTravel(const FString & PendingURL, ETravelType TravelType, bool bIsSeamlessTravel) override;
+	virtual void BeginPlayingState() override;
 	
 private:
 	void MoveForward(float axisValue);
