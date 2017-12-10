@@ -27,21 +27,23 @@ public:
 
 };
 
+//static const int32 NUMBER_OF_PICKUP_TYPES = 5;
 UENUM(BlueprintType)
 namespace EPickupType
 {
 	enum Type
 	{
-		NONE,
-		LONGER_BOMB_BLASTS,
-		MORE_BOMBS,
-		FASTER_RUN_SPEED,
-		REMOTE_CONTROLLED_BOMBS
+		NONE = 0,
+		LONGER_BOMB_BLASTS = 1,
+		MORE_BOMBS = 2,
+		FASTER_RUN_SPEED = 3,
+		REMOTE_CONTROLLED_BOMBS = 4
 	};
-}
 
+}
 namespace EPickupType
 {
+	static const int32 NUMBER_OF_PICKUP_TYPES = 5;
 	inline const TCHAR* ToString(EPickupType::Type Type)
 	{
 		switch (Type)

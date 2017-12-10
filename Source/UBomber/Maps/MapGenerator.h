@@ -36,5 +36,5 @@ public:
 	
 	/**
 	*/
-	FMapDataStruct GenerateMapData(int32 Size);
+	FMapDataStruct GenerateMap(int32 Size);
 };
