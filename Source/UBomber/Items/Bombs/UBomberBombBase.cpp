@@ -25,6 +25,7 @@ AUBomberBombBase::AUBomberBombBase(const FObjectInitializer& ObjectInitializer) 
 	SphereComponent->Mobility = EComponentMobility::Static;
 	SphereComponent->CanCharacterStepUpOn = ECanBeCharacterBase::ECB_No;
 	SphereComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	SphereComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Block);
 	SphereComponent->OnComponentEndOverlap.AddDynamic(this, &AUBomberBombBase::OnOwnerOverlapEnd);
 	RootComponent = SphereComponent;
 
@@ -71,7 +72,7 @@ float AUBomberBombBase::TakeDamage(float Damage, struct FDamageEvent const& Dama
 		}
 		
 		GetWorld()->GetTimerManager().ClearTimer(BombTimerHandle);
-		BombTime = 1.0f;
+		BombTime = 0.2f;
 		GetWorld()->GetTimerManager().SetTimer(BombTimerHandle, this, &AUBomberBombBase::BombTimerExpired, BombTime);
 		bTimerExpired = true;
 	}
