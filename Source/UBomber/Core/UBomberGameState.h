@@ -15,8 +15,14 @@ class UBOMBER_API AUBomberGameState : public AGameStateBase
 {
 	GENERATED_BODY()
 public:
+
+	AUBomberGameState();
+
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = Default)
 	TArray<TSubclassOf<AUBomberCharacter>> PlayersPawns;
-	
-	
+
+	TArray<bool> GetResultsForControllers();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Time)
+	int32 CurrentGameTimeInSeconds;
 };

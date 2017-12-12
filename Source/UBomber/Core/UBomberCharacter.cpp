@@ -21,6 +21,7 @@ AUBomberCharacter::AUBomberCharacter(const FObjectInitializer& ObjectInitializer
 	BombTime = 3.0f;
 	BombCounter = 0;
 	bRemoteDetonatingOn = false;
+	bIsAlive = true;
 
 	SphereComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AUBomberCharacter::OnBeginOverlapPickup);
@@ -169,6 +170,7 @@ float AUBomberCharacter::TakeDamage(float Damage, struct FDamageEvent const& Dam
 	if (IsValid(this)) {
 		UE_LOG(LogTemp, Warning, TEXT("Damage inflicted to player by %s"), *DamageCauser->GetName());
 		UE_LOG(LogTemp, Warning, TEXT("Player %s killed"), *PlayerState->PlayerName);
+		bIsAlive = false;
 		Destroy();
 	}
 	return Damage;

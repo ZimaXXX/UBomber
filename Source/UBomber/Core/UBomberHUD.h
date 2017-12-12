@@ -14,7 +14,15 @@ class UBOMBER_API AUBomberHUD : public AHUD
 {
 	GENERATED_BODY()
 	
+public:
+	void ShowEndScreen(FString Text);
+	void CloseEndScreen();
 	
-	
-	
+	UFUNCTION(BlueprintImplementableEvent, Category = HUD)
+	void ShowEndScreenBPEvent(const FString &Text);
+
+	UFUNCTION(BlueprintImplementableEvent, Category = HUD)
+	void CloseEndScreenBPEvent();
+
+
 };

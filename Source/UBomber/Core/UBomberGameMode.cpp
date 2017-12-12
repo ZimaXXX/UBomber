@@ -3,6 +3,7 @@
 #include "UBomberGameMode.h"
 #include "Core/UBomberGameState.h"
 #include "Core/UBomberPlayerController.h"
+#include "Items/Camera/UBomberCameraFocusActor.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "Runtime/Engine/Classes/Engine/PlayerStartPIE.h"
 #include "Core/UBomberPlayerState.h"
@@ -15,13 +16,9 @@ static int32 DEFAULT_MAP_DIMENSION_SIZE = 9;
 static float SINGLE_MAP_ELEMENT_SIZE = 100.0f;
 AUBomberGameMode::AUBomberGameMode(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer) 
 {
-	bUseSeamlessTravel = true;
 	MapDimensionSize = DEFAULT_MAP_DIMENSION_SIZE;
-	//bIsProceduralMapSpawned = false;
-
-	//MapGeneratorComponent = ObjectInitializer.CreateDefaultSubobject<UMapGeneratorComponent>(this, TEXT("MapGenerator"));
-	//MapGeneratorComponent->OnMapReadyDelegate.BindUObject(this, &AUBomberGameMode::OnProceduralMapReady);
-	//MapGeneratorComponent->AttachTo(GetRootComponent());
+	bTimerExpired = false;
+	GameTimeInSeconds = 60;
 }
 
 void AUBomberGameMode::OnBombExploded(AUBomberBombBase * BombReference)
@@ -43,6 +40,14 @@ void AUBomberGameMode::BeginPlay()
 	if (!UGameplayStatics::GetPlayerController(GetWorld(), 1)) {
 		UGameplayStatics::CreatePlayer(GetWorld(), 1, true);
 	}
+	UBomberCameraFocusActor = GetWorld()->SpawnActor<AUBomberCameraFocusActor>();
+	UBomberCameraFocusActor->SetOwner(this);
+	AUBomberGameState* UB_GS = GetGameState<AUBomberGameState>();
+	if (UB_GS) {
+		UB_GS->CurrentGameTimeInSeconds = GameTimeInSeconds;
+	}
+	GetWorld()->GetTimerManager().SetTimer(GameTimerHandle, this, &AUBomberGameMode::GameTimerTick, TickTime, true);
+	bTimerExpired = false;
 
 	//FMapDataStruct MapData = MapGenerator->GenerateMapData(7);
 	//UGameplayStatics::CreatePlayer(GetWorld(), 1, true);
@@ -164,36 +169,72 @@ void AUBomberGameMode::SpawnProceduralMap(FMapDataStruct MapData)
 
 void AUBomberGameMode::CheckIfGameEnds()
 {
-	TArray<AUBomberPlayerController*> AlivePlayers;
-	for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
-	{
-		APlayerController* PlayerController = Iterator->Get();
-		AUBomberPlayerController * UB_PC = Cast<AUBomberPlayerController>(PlayerController);
-		if (UB_PC)
-		{
-			if (IsValid(UB_PC->GetPawn())) {
-				AlivePlayers.Add(UB_PC);
-			}
-		}
-	}
-	if (AlivePlayers.Num() == 0) {
+	bool bIsGameFinished = false;
+	if (bTimerExpired) {
 		UE_LOG(LogTemp, Warning, TEXT("It's a TIE!"));
+		bIsGameFinished = true;
 	}
-	else if(AlivePlayers.Num() == 1) {
-		AUBomberPlayerController * UB_PC = AlivePlayers[0];
-		if (IsValid(UB_PC)) {
-			if (IsValid(UB_PC->PlayerState)) {
-				UE_LOG(LogTemp, Warning, TEXT("Player %s WON"), *UB_PC->PlayerState->PlayerName);
-				AUBomberPlayerState* UB_PS = Cast<AUBomberPlayerState>(UB_PC->PlayerState);
-				if (UB_PS) {
-					UB_PS->NumberOfVictories++;
-				}				
-			}
-			else {
-				UE_LOG(LogTemp, Warning, TEXT("Player WON"));
+	else {
+		TArray<AUBomberPlayerController*> AlivePlayers;
+		for (FConstPlayerControllerIterator Iterator = GetWorld()->GetPlayerControllerIterator(); Iterator; ++Iterator)
+		{
+			APlayerController* PlayerController = Iterator->Get();
+			AUBomberPlayerController * UB_PC = Cast<AUBomberPlayerController>(PlayerController);
+			if (UB_PC)
+			{
+				if (IsValid(UB_PC->GetPawn()) && !UB_PC->GetPawn()->IsPendingKill() && UB_PC->GetPawn()->IsA<AUBomberCharacter>() && Cast<AUBomberCharacter>(UB_PC->GetPawn())->bIsAlive) {
+					AlivePlayers.Add(UB_PC);
+				}
 			}
 		}
+		if (AlivePlayers.Num() == 0) {
+			UE_LOG(LogTemp, Warning, TEXT("It's a TIE!"));
+			bIsGameFinished = true;
+		}
+		else if (AlivePlayers.Num() == 1) {
+			AUBomberPlayerController * UB_PC = AlivePlayers[0];
+			if (IsValid(UB_PC)) {
+				if (IsValid(UB_PC->PlayerState)) {
+					UE_LOG(LogTemp, Warning, TEXT("Player %s WON"), *UB_PC->PlayerState->PlayerName);
+					AUBomberPlayerState* UB_PS = Cast<AUBomberPlayerState>(UB_PC->PlayerState);
+					if (UB_PS) {
+						UB_PS->WonLastGame = true;
+						UB_PS->NumberOfVictories++;
+					}
+				}
+				else {
+					UE_LOG(LogTemp, Warning, TEXT("Player WON"));
+				}
+			}
+			bIsGameFinished = true;
+		}
+	}
+	
+	if (bIsGameFinished) {	
+		APlayerController* FirstPlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+		if (FirstPlayerController) {
+			FirstPlayerController->SetPause(true);
+		}
+	}
+}
 
+void AUBomberGameMode::GameTimerExpired()
+{
+	bTimerExpired = true;
+	CheckIfGameEnds();
+}
+
+void AUBomberGameMode::GameTimerTick()
+{
+	auto UB_GS = GetGameState<AUBomberGameState>();
+	if (UB_GS) {
+		if (UB_GS->CurrentGameTimeInSeconds > 1) {
+			--UB_GS->CurrentGameTimeInSeconds;
+		}
+		else {
+			UB_GS->CurrentGameTimeInSeconds = 0;
+			GameTimerExpired();
+		}
 	}
 }
 

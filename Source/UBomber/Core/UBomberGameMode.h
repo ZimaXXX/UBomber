@@ -30,6 +30,9 @@ public:
 
 	uint8 bIsProceduralMapSpawned : 1;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Time)
+		int32 GameTimeInSeconds;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Map)
 		uint8 MapDimensionSize;
 
@@ -58,4 +61,12 @@ protected:
 private:
 	void SpawnProceduralMap(FMapDataStruct MapData);
 	void CheckIfGameEnds();
+	class AUBomberCameraFocusActor* UBomberCameraFocusActor;
+
+	uint8 bTimerExpired : 1;
+	int32 TickTime = 1;
+	
+	void GameTimerExpired();
+	void GameTimerTick();
+	FTimerHandle GameTimerHandle;
 };

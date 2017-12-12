@@ -5,11 +5,17 @@
 #include "Core/UBomberPlayerState.h"
 #include "Core/UBomberCharacter.h"
 #include "Core/UBomberGameInstance.h"
+#include "Core/UBomberGameState.h"
+#include "Core/UBomberHUD.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "Runtime/Engine/Classes/Engine/LocalPlayer.h"
 #include "Runtime/Engine/Classes/GameFramework/Pawn.h"
 #include "Runtime/Engine/Classes/GameFramework/PlayerState.h"
 #include "Engine/World.h"
+
+AUBomberPlayerController::AUBomberPlayerController() : Super(){
+	bAutoManageActiveCameraTarget = false;
+}
 
 void AUBomberPlayerController::BeginPlay() {
 	Super::BeginPlay();
@@ -32,7 +38,8 @@ void AUBomberPlayerController::SetupInputComponent() {
 			InputComponent->BindAxis("MoveRight_Player2", this, &AUBomberPlayerController::MoveRight);
 			InputComponent->BindAction("PlaceBomb_Player2", IE_Pressed, this, &AUBomberPlayerController::PlaceBomb);
 		}
-		InputComponent->BindAction("RestartGame", IE_Pressed, this, &AUBomberPlayerController::RestartGame);
+		InputComponent->BindAction("RestartGame", IE_Pressed, this, &AUBomberPlayerController::RestartGame).bExecuteWhenPaused = true;
+		InputComponent->BindAction("ExitGame", IE_Pressed, this, &AUBomberPlayerController::ExitGame).bExecuteWhenPaused = true;
 	}	
 }
 
@@ -63,6 +70,48 @@ void AUBomberPlayerController::BeginPlayingState()
 	
 	}
 }
+
+bool AUBomberPlayerController::SetPause(bool bPause, FCanUnpause CanUnpauseDelegate)
+{
+	bool bIsSetPauseSuccessful = Super::SetPause(bPause, CanUnpauseDelegate);
+	if (bIsSetPauseSuccessful) {
+		AHUD* HUD = GetHUD();
+		if (HUD && HUD->IsA<AUBomberHUD>()) {
+			AUBomberHUD* UB_HUD = Cast<AUBomberHUD>(HUD);
+			if (bPause) {
+				FString FinalText;
+				AUBomberGameState* UB_GS = Cast<AUBomberGameState>(GetWorld()->GetGameState());
+				if (UB_GS) {
+					bool bWinnerFound = false;
+					TArray<bool> Results = UB_GS->GetResultsForControllers();
+					for (int i = 0; i < Results.Num(); ++i) {
+						if (Results[i] == true) {
+							auto PC = UGameplayStatics::GetPlayerController(GetWorld(), i);
+							if (PC && PC->PlayerState) {
+								FinalText = "Player " + PC->PlayerState->PlayerName + " WON!";
+								bWinnerFound = true;
+							}
+							break;
+						}
+					}
+					if (!bWinnerFound) {
+						FinalText = "It's a TIE!";
+					}
+				}
+				UB_HUD->ShowEndScreen(FinalText);
+			}
+			else {
+				UB_HUD->CloseEndScreen();
+			}
+		}
+	}
+	return bIsSetPauseSuccessful;
+}
+
+//ASpectatorPawn * AUBomberPlayerController::SpawnSpectatorPawn()
+//{
+//	return nullptr;
+//}
 
 void AUBomberPlayerController::MoveForward(float axisValue)
 {
@@ -97,4 +146,10 @@ void AUBomberPlayerController::RestartGame()
 	UE_LOG(LogTemp, Warning, TEXT("Trying to restart level"));
 	RestartLevel();
 
+}
+
+void AUBomberPlayerController::ExitGame()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Trying to end game"));
+	ConsoleCommand("quit");
 }

@@ -2,6 +2,15 @@
 
 #include "UBomberHUD.h"
 
+void AUBomberHUD::ShowEndScreen(FString Text)
+{
+	ShowEndScreenBPEvent(Text);
+}
 
+
+void AUBomberHUD::CloseEndScreen()
+{
+	CloseEndScreenBPEvent();
+}
 
 

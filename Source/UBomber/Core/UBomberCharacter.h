@@ -26,10 +26,14 @@ public:
 	UFUNCTION(BlueprintNativeEvent, Category = Default)
 	void PlayerStateReady();
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Default)
+	float SpeedModifier;
+
 	float GetSpeedModifier() const;
 
 	void PlaceBomb();
 	void OnBombExploded(AUBomberBombBase* BombReference);
+	uint8 bIsAlive;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Bomb)
 		float BombTime;
@@ -53,7 +57,7 @@ protected:
 
 private:
 	int32 BombCounter;
-	float SpeedModifier;
+
 
 	uint8 bTimerExpired : 1;
 	void BombTimerExpired();

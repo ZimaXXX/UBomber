@@ -5,6 +5,7 @@
 AUBomberPlayerState::AUBomberPlayerState() : Super() 
 {
 	NumberOfVictories = 0;
+	WonLastGame = false;
 }
 
 
