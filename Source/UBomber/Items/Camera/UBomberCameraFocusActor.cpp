@@ -13,7 +13,7 @@
 // Sets default values
 AUBomberCameraFocusActor::AUBomberCameraFocusActor(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	MinArmLength = 900.f;
+	MinArmLength = 1000.f;
 	MaxArmLength = 2000.f;
 	FVector LastPlayer1Location = FVector::ZeroVector;
 	FVector LastPlayer2Location = FVector::ZeroVector;
@@ -21,7 +21,7 @@ AUBomberCameraFocusActor::AUBomberCameraFocusActor(const FObjectInitializer& Obj
 	RootComponent = CreateDefaultSubobject<USceneComponent>("DummyRoot");
 	// Create a camera boom attached to the root (capsule)
 	CameraArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraArm"));
-	CameraArmComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepWorldTransform);
+	CameraArmComponent->SetupAttachment(RootComponent);
 	CameraArmComponent->TargetArmLength = 1000.f;
 	//Prevent Camera from being blocked by map elements
 	CameraArmComponent->bDoCollisionTest = false;
@@ -29,7 +29,7 @@ AUBomberCameraFocusActor::AUBomberCameraFocusActor(const FObjectInitializer& Obj
 
 	// Create a camera and attach to boom
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	CameraComponent->AttachToComponent(CameraArmComponent, FAttachmentTransformRules::KeepWorldTransform, USpringArmComponent::SocketName);
+	CameraComponent->SetupAttachment(CameraArmComponent, USpringArmComponent::SocketName);
 	
 	//CameraComponent->bUsePawnControlRotation = false; // We don't want the controller rotating the camera
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -100,7 +100,7 @@ void AUBomberCameraFocusActor::UpdateCamera(FVector Player1Location, FVector Pla
 	FVector Distance;
 	Distance = Player1Location - Player2Location;
 
-	float NewArmLength = 1.5 * Distance.Size();
+	float NewArmLength = Distance.Size() * 1.5;
 	if (NewArmLength < MinArmLength) {
 		NewArmLength = MinArmLength;
 	}

@@ -7,8 +7,8 @@
 #include "UBomberSolidWall.generated.h"
 
 /**
- * 
- */
+* Solid Wall is impenetrable by Bombs
+*/
 UCLASS()
 class UBOMBER_API AUBomberSolidWall : public AUBomberWallBase
 {

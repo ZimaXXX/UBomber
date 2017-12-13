@@ -4,30 +4,10 @@
 #include "Runtime/Engine/Classes/Materials/Material.h"
 #include "UBomberTypes.generated.h"
 
-/** Structure that defines a level up table entry */
-USTRUCT(BlueprintType)
-struct FPlayerData : public FTableRowBase
-{
-	GENERATED_USTRUCT_BODY()
+/** 
+* Defines the pickup type
+*/
 
-public:
-
-	FPlayerData()
-		: PlayerName("")
-	{}
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Default)
-		int32 PlayerId;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Default)
-		FString PlayerName;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Default)
-		UMaterial* MeshMaterial;
-
-};
-
-//static const int32 NUMBER_OF_PICKUP_TYPES = 5;
 UENUM(BlueprintType)
 namespace EPickupType
 {
@@ -46,6 +26,9 @@ namespace EPickupType
 	static const int32 NUMBER_OF_PICKUP_TYPES = 5;
 }
 
+/**
+* Stores Map metadata
+*/
 USTRUCT(BlueprintType)
 struct FMapDataStruct
 {

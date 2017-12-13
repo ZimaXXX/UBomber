@@ -6,6 +6,9 @@
 #include "GameFramework/Actor.h"
 #include "UBomberFloorBase.generated.h"
 
+/**
+* Actor for generating Floor of the Procedural Map
+*/
 UCLASS()
 class UBOMBER_API AUBomberFloorBase : public AActor
 {

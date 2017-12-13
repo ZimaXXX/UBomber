@@ -8,8 +8,8 @@
 #include "UBomberDestructableWall.generated.h"
 
 /**
- * 
- */
+* Destructable Wall block Bomb impact but is detroyed afterward. Has a change to spawn Pickup.
+*/
 UCLASS()
 class UBOMBER_API AUBomberDestructableWall : public AUBomberWallBase
 {

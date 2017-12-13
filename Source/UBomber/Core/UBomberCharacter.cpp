@@ -15,7 +15,8 @@ static const float REMOTE_BOMB_PICKUP_TIME = 10.0f;
 // Sets default values
 AUBomberCharacter::AUBomberCharacter(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer.SetDefaultSubobjectClass<UUBomberCharMovementComponent>(ACharacter::CharacterMovementComponentName))
 {
-	SpeedModifier = 1.0f;
+	SpeedModifier = 0.2f;
+	Speed = 1.0f;
 	BombRange = 0;
 	BombLimit = 1;
 	BombTime = 3.0f;
@@ -27,7 +28,7 @@ AUBomberCharacter::AUBomberCharacter(const FObjectInitializer& ObjectInitializer
 	SphereComponent->OnComponentBeginOverlap.AddDynamic(this, &AUBomberCharacter::OnBeginOverlapPickup);
 	SphereComponent->SetupAttachment(GetRootComponent());
 
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 }
 
 void AUBomberCharacter::PlayerStateReady_Implementation()
@@ -74,7 +75,7 @@ void AUBomberCharacter::PickupFound(EPickupType::Type PickupType)
 		BombLimit++;
 		break;
 	case(EPickupType::FASTER_RUN_SPEED):
-		SpeedModifier += 0.5f;
+		Speed += SpeedModifier;
 		break;
 	case(EPickupType::REMOTE_CONTROLLED_BOMBS):
 		bRemoteDetonatingOn = true;
@@ -103,9 +104,9 @@ void AUBomberCharacter::PossessedBy(AController * NewController)
 	}
 }
 
-float AUBomberCharacter::GetSpeedModifier() const
+float AUBomberCharacter::GetSpeed() const
 {
-	return SpeedModifier;
+	return Speed;
 }
 
 void AUBomberCharacter::PlaceBomb() {
@@ -156,13 +157,6 @@ void AUBomberCharacter::PlaceBomb() {
 			}
 		}
 	}
-}
-
-// Called every frame
-void AUBomberCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
 }
 
 float AUBomberCharacter::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)

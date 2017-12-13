@@ -102,8 +102,6 @@ void AUBomberBombBase::Detonate()
 		}
 	}
 	OnBombExplodedDelegate.Execute(this);
-	//Call BP Event
-	OnBombExploded();
 	//Remove Bomb from game
 	this->Destroy();
 }

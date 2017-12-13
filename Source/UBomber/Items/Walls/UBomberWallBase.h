@@ -5,7 +5,9 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "UBomberWallBase.generated.h"
-
+/**
+* Base for game Walls. Walls block Bomb impact
+*/
 UCLASS()
 class UBOMBER_API AUBomberWallBase : public AActor
 {
@@ -15,13 +17,10 @@ public:
 	// Sets default values for this actor's properties
 	AUBomberWallBase();
 
+	/**
+	* Box for Wall mesh
+	*/
 	UPROPERTY(VisibleDefaultsOnly, Category = Default)
-		class UStaticMeshComponent* BoxComponent;
-
-
-protected:
-
-	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;	
+	class UStaticMeshComponent* BoxComponent;
 	
 };

@@ -18,11 +18,20 @@ public:
 
 	AUBomberGameState();
 
+	/**
+	* Pawns picked by Controller id
+	*/
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = Default)
 	TArray<TSubclassOf<AUBomberCharacter>> PlayersPawns;
 
+	/**
+	* Retruns alive status per player controller id
+	*/
 	TArray<bool> GetResultsForControllers();
 
+	/**
+	* Tracks GameTimer
+	*/
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Time)
 	int32 CurrentGameTimeInSeconds;
 };

@@ -16,8 +16,18 @@ class UBOMBER_API UUBomberGameInstance : public UGameInstance
 
 public:
 	UUBomberGameInstance();
-	TArray<int32> ArrayOfVictoriesCount;
 	
+	/**
+	* Sets the number of victories in the game per player controller index
+	*/
 	void SetVictoriesForIndex(int32 index, int32 value);
+
+	/**
+	* Returns the number of victories in the game per player controller index
+	* @Return Returns number of vectories or -1 if index was not found
+	*/
 	int32 GetVictoriesForIndex(int32 index);
+
+private:
+	TArray<int32> ArrayOfVictoriesCount;
 };

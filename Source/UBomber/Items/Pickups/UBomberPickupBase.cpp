@@ -24,20 +24,6 @@ AUBomberPickupBase::AUBomberPickupBase(const FObjectInitializer& ObjectInitializ
 
 }
 
-// Called when the game starts or when spawned
-void AUBomberPickupBase::BeginPlay()
-{
-	Super::BeginPlay();
-	
-}
-
-// Called every frame
-void AUBomberPickupBase::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-
-}
-
 float AUBomberPickupBase::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
 {
 	//Super::ReceiveAnyDamage_Implementation(Damage, DamageType, InstigatedBy, DamageCauser);

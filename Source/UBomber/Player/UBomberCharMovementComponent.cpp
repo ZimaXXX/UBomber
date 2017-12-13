@@ -10,7 +10,7 @@ float UUBomberCharMovementComponent::GetMaxSpeed() const
 	AUBomberCharacter* const UB_C = Cast<AUBomberCharacter>(PawnOwner);
 	if (IsValid(UB_C))
 	{
-		MaxSpeed *= UB_C->GetSpeedModifier();
+		MaxSpeed *= UB_C->GetSpeed();
 	}
 
 	return MaxSpeed;

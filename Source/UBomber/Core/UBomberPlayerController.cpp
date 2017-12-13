@@ -14,11 +14,8 @@
 #include "Engine/World.h"
 
 AUBomberPlayerController::AUBomberPlayerController() : Super(){
+	//Disables losing focus on map when Player Controller 0's Pawn dies
 	bAutoManageActiveCameraTarget = false;
-}
-
-void AUBomberPlayerController::BeginPlay() {
-	Super::BeginPlay();
 }
 
 void AUBomberPlayerController::SetupInputComponent() {
@@ -88,7 +85,7 @@ bool AUBomberPlayerController::SetPause(bool bPause, FCanUnpause CanUnpauseDeleg
 						if (Results[i] == true) {
 							auto PC = UGameplayStatics::GetPlayerController(GetWorld(), i);
 							if (PC && PC->PlayerState) {
-								FinalText = "Player " + PC->PlayerState->PlayerName + " WON!";
+								FinalText = "Player " + PC->PlayerState->PlayerName + " WINS!";
 								bWinnerFound = true;
 							}
 							break;
@@ -107,12 +104,6 @@ bool AUBomberPlayerController::SetPause(bool bPause, FCanUnpause CanUnpauseDeleg
 	}
 	return bIsSetPauseSuccessful;
 }
-
-//ASpectatorPawn * AUBomberPlayerController::SpawnSpectatorPawn()
-//{
-//	return nullptr;
-//}
-
 void AUBomberPlayerController::MoveForward(float axisValue)
 {
 	//UE_LOG(LogTemp, Warning, TEXT("Going forward: %f"), axisValue);

@@ -19,12 +19,15 @@ public:
 
 	AUBomberPlayerState();
 
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = Default)
-	UMaterial* PlayerMaterial;
-
+	/**
+	* Flag for indicating winner
+	*/
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = Default)
 	uint8 WonLastGame;
 	
+	/**
+	* Number of Victories counter
+	*/
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = Default)
 	int32 NumberOfVictories;
 };

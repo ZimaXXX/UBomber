@@ -17,14 +17,26 @@ public:
 	AUBomberPlayerController();
 protected:
 
-	//Overrides
-	virtual void BeginPlay() override;
+	/**
+	* Override for setting input methods
+	*/
 	virtual void SetupInputComponent() override;
+	/**
+	* Override for saving Victories count to GameSession just before game restart
+	*/
 	virtual void PreClientTravel(const FString & PendingURL, ETravelType TravelType, bool bIsSeamlessTravel) override;
+	/**
+	* Override for loading Victories count to GameSession when Pawn and PlayerState are ready
+	*/
 	virtual void BeginPlayingState() override;
+
+	/**
+	* Override for showing and preparing end game text in HUD
+	*/
 	virtual bool SetPause(bool bPause, FCanUnpause CanUnpauseDelegate) override;
 	
 private:
+	//Input methods
 	void MoveForward(float axisValue);
 	void MoveRight(float axisValue);
 	void PlaceBomb();	
