@@ -2,6 +2,8 @@
 
 A simple spinoff off Dyna-Blaster aka Bomberman mechanics.
 
+![alt text](https://github.com/ZimaXXX/UBomber/blob/master/ubomber.png)
+
 Completed features:
 
 Static top-down view on the level (Bonus: camera that pans in/out depending on distance between players in the level)
