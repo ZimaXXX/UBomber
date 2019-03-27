@@ -1,5 +1,7 @@
 ﻿# UBomber
 
+Unreal Engine 4.16.X required
+
 A simple spinoff off Dyna-Blaster aka Bomberman mechanics.
 
 ![alt text](https://github.com/ZimaXXX/UBomber/blob/master/ubomber.png)
